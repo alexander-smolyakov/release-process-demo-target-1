@@ -1,7 +1,13 @@
 name: Build and Test
 
 on: 
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      failJob:
+        description: Fail the job?
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   label:
@@ -21,3 +27,7 @@ jobs:
     
     - name: Run tests
       run: python tests.py
+    
+    - name: Pass or fail job
+      run: exit 1
+      if: github.event.inputs.failJob == 'true'
