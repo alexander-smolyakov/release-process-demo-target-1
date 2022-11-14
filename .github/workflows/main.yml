@@ -1,10 +1,7 @@
 name: Build and Test
 
-on:
-  push:
-    branches:
-      - main
-      - 'releases/**'
+on: 
+  workflow_dispatch
 
 jobs:
   label:
