@@ -20,16 +20,16 @@ jobs:
     steps:
 
     - name: Report status to release ticket
-        uses: actions/github-script@v6
-        with: 
-          github-token: ${{ secrets.GH_REPO_DEMO }}
-          script: |
-            await github.rest.issues.createComment({
-              owner: 'alexander-smolyakov',
-              repo: 'release-process-demo',
-              issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
-              body: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
-            });
+      uses: actions/github-script@v6
+      with: 
+        github-token: ${{ secrets.GH_REPO_DEMO }}
+        script: |
+          await github.rest.issues.createComment({
+            owner: 'alexander-smolyakov',
+            repo: 'release-process-demo',
+            issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
+            body: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+          });
     
     - name: Checkout repo
       uses: actions/checkout@v1
