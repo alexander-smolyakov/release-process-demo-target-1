@@ -21,14 +21,18 @@ jobs:
 
     - name: Report status to release ticket
       uses: actions/github-script@v6
-      with: 
+      with:
         github-token: ${{ secrets.GH_REPO_DEMO }}
         script: |
-          await github.rest.issues.createComment({
+          await github.rest.actions.createWorkflowDispatch({
             owner: 'alexander-smolyakov',
             repo: 'release-process-demo',
-            issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
-            body: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            workflow_id: 'update_release_ticket.yml',
+            ref: 'main',
+            inputs: {
+              ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+              message: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            }
           });
     
     - name: Checkout repo
@@ -50,11 +54,15 @@ jobs:
       with: 
         github-token: ${{ secrets.GH_REPO_DEMO }}
         script: |
-          await github.rest.issues.createComment({
+          await github.rest.actions.createWorkflowDispatch({
             owner: 'alexander-smolyakov',
             repo: 'release-process-demo',
-            issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
-            body: `Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            workflow_id: 'update_release_ticket.yml',
+            ref: 'main',
+            inputs: {
+              ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+              message: `Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            }
           });
   
     - name: Pass or fail job
