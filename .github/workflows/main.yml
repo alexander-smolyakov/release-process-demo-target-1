@@ -8,11 +8,28 @@ on:
         type: boolean
         required: false
         default: false
+      releaseTicketNumber:
+        description: Release ticket number
+        type: string
+        required: false
+        default: ''
 
 jobs:
   label:
     runs-on: ubuntu-latest
     steps:
+
+    - name: Report status to release ticket
+        uses: actions/github-script@v6
+        with: 
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: 'alexander-smolyakov',
+              repo: 'release-process-demo',
+              issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
+              body: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            });
     
     - name: Checkout repo
       uses: actions/checkout@v1
@@ -27,7 +44,18 @@ jobs:
     
     - name: Run tests
       run: python tests.py
-    
+
+    - name: Report status to release ticket
+        uses: actions/github-script@v6
+        with: 
+          script: |
+            await github.rest.issues.createComment({
+              owner: 'alexander-smolyakov',
+              repo: 'release-process-demo',
+              issue_number: '${{ github.event.inputs.releaseTicketNumber }}',
+              body: `Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            });
+  
     - name: Pass or fail job
       run: exit 1
       if: github.event.inputs.failJob == 'true'
