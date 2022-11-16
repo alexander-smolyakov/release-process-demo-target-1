@@ -31,7 +31,7 @@ jobs:
             ref: 'main',
             inputs: {
               ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-              message: `Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              message: `✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
             }
           });
     
@@ -61,7 +61,7 @@ jobs:
             ref: 'main',
             inputs: {
               ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-              message: `Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              message: `✅ Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
             }
           });
   
