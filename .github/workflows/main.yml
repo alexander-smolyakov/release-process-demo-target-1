@@ -84,7 +84,7 @@ jobs:
                 repo: context.repo.repo,
                 tag_name: process.env.RELEASE_TAG,
               });
-              return response.html_url;
+              return release.html_url;
             } catch (error) {
               core.setFailed(error.message);
             }
