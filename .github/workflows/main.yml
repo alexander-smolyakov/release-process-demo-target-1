@@ -64,8 +64,6 @@ jobs:
               }
             });
 
-
-
       - name: Determine tag
         run: 'echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV'
 
@@ -73,6 +71,8 @@ jobs:
         uses: "actions/github-script@v6"
         id: release-link
         with:
+          debug: true
+          result-encoding: string
           script: |
             try {
               const release = await github.rest.repos.createRelease({
