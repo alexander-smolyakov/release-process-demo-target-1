@@ -34,7 +34,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `Update from: ${{ github.repository }}\n✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
 
@@ -69,7 +69,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `Update from: ${{ github.repository }}\n✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
 
@@ -120,7 +120,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `✅ Release published - [link](${{ steps.release-link.outputs.result }})`
+                message: `Update from: ${{ github.repository }}\n✅ Release published\nRelease tag: ${{ process.env.RELEASE_TAG }}\nLink to release: [link](${{ steps.release-link.outputs.result }})`
               }
             });
 
@@ -129,7 +129,7 @@ jobs:
       # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
       # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
       - name: Update release ticket - pipeline failed
-        if: failure() && ${{ github.event.inputs.releaseTicketNumber != -1 }}
+        if: failure()
         uses: actions/github-script@v6
         with:
           uses: actions/github-script@v6
@@ -142,6 +142,6 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `❌ Release pipelin failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `Update from: ${{ github.repository }}\n❌ Release pipeline failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
