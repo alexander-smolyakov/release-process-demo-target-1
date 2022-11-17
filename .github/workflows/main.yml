@@ -34,7 +34,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `Update from: ${{ github.repository }}\n✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
 
@@ -69,7 +69,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `Update from: ${{ github.repository }}\n✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
 
@@ -120,7 +120,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `Update from: ${{ github.repository }}\n✅ Release published\nRelease tag: $env:RELEASE_TAG\nLink to release: [link](${{ steps.release-link.outputs.result }})`
+                message: `✅ Release published\nLink to release: [link](${{ steps.release-link.outputs.result }})`
               }
             });
 
@@ -142,6 +142,6 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `Update from: ${{ github.repository }}\n❌ Release pipeline failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `❌ Release pipeline failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
