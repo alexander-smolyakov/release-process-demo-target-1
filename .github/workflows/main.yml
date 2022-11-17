@@ -120,7 +120,7 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `✅ Release published\nLink to release: [link](${{ steps.release-link.outputs.result }})`
+                message: `✅ Release published. Link to release: [link](${{ steps.release-link.outputs.result }})`
               }
             });
 
