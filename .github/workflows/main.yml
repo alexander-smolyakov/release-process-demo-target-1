@@ -1,24 +1,28 @@
-name: Build and Test
+name: Build, Test and Publish release
 
 on:
   workflow_dispatch:
     inputs:
-      failJob:
-        description: Fail the job?
-        type: boolean
+      reportTo:
+        description: Repo to report release status
+        type: string
         required: false
-        default: false
+        default: "release-process-demo"
       releaseTicketNumber:
         description: Release ticket number
         type: string
         required: false
-        default: ""
+        default: "-1"
 
 jobs:
   release-proccess:
     runs-on: ubuntu-latest
     steps:
-      - name: Report status to release ticket
+      # Step: Send link for release pipeline to release ticket.
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Link to pipeline
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_REPO_DEMO }}
@@ -34,6 +38,7 @@ jobs:
               }
             });
 
+      # Generic steps to build and test simple python app
       - name: Checkout repo
         uses: actions/checkout@v1
 
@@ -48,7 +53,11 @@ jobs:
       - name: Run tests
         run: python tests.py
 
-      - name: Report status to release ticket
+      # Step: Send status of build and test steps to release ticket
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Build and test status
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_REPO_DEMO }}
@@ -60,14 +69,20 @@ jobs:
               ref: 'main',
               inputs: {
                 ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
-                message: `✅ Release pipeline was passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+                message: `✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
               }
             });
 
+      # Steps to publish GitHub release
+
+      # Resolve release tag
       - name: Determine tag
         run: 'echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV'
 
-      - name: "Create release"
+      # Step: Create GH release against tag 
+      # Description: We send a request to GH API to create the release and save the link to it from the API request response
+      # GH API doc: https://docs.github.com/en/rest/releases/releases#create-a-release
+      - name: "Create GitHub release"
         uses: "actions/github-script@v6"
         id: release-link
         with:
@@ -89,7 +104,11 @@ jobs:
               core.setFailed(error.message);
             }
 
-      - name: Report status to release ticket
+      # Step: Send link for GH release to release ticket
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Link to release
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GH_REPO_DEMO }}
@@ -105,6 +124,25 @@ jobs:
               }
             });
 
-      - name: Pass or fail job
-        run: exit 1
-        if: github.event.inputs.failJob == 'true'
+      
+      # Step: If pipeline failed we send notifiactin to release ticekt
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - pipeline failed
+        if: failure() && ${{ github.event.inputs.releaseTicketNumber != -1 }}
+        uses: actions/github-script@v6
+        with:
+          uses: actions/github-script@v6
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'alexander-smolyakov',
+              repo: 'release-process-demo',
+              workflow_id: 'update_release_ticket.yml',
+              ref: 'main',
+              inputs: {
+                ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+                message: `❌ Release pipelin failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              }
+            });
