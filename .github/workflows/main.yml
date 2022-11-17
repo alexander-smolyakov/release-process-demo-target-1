@@ -79,7 +79,7 @@ jobs:
       - name: Determine tag
         run: 'echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV'
 
-      # Step: Create GH release against tag 
+      # Step: Create GH release against tag
       # Description: We send a request to GH API to create the release and save the link to it from the API request response
       # GH API doc: https://docs.github.com/en/rest/releases/releases#create-a-release
       - name: "Create GitHub release"
@@ -124,7 +124,6 @@ jobs:
               }
             });
 
-      
       # Step: If pipeline failed we send notifiactin to release ticekt
       # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
       # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
