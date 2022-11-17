@@ -15,7 +15,7 @@ on:
         default: ""
 
 jobs:
-  label:
+  release-proccess:
     runs-on: ubuntu-latest
     steps:
       - name: Report status to release ticket
