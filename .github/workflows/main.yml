@@ -1,0 +1,147 @@
+name: Build, Test and Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      reportTo:
+        description: Repo to report release status
+        type: string
+        required: false
+        default: "release-process-demo"
+      releaseTicketNumber:
+        description: Release ticket number
+        type: string
+        required: false
+        default: "-1"
+
+jobs:
+  release-proccess:
+    runs-on: ubuntu-latest
+    steps:
+      # Step: Send link for release pipeline to release ticket.
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Link to pipeline
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'alexander-smolyakov',
+              repo: '${{ github.event.inputs.reportTo }}',
+              workflow_id: 'update_release_ticket.yml',
+              ref: 'main',
+              inputs: {
+                ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+                message: `✅ Release pipeline was launched successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              }
+            });
+
+      # Generic steps to build and test simple python app
+      - name: Checkout repo
+        uses: actions/checkout@v1
+
+      - name: Setup python version
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run app
+        run: python app.py
+
+      - name: Run tests
+        run: python tests.py
+
+      # Step: Send status of build and test steps to release ticket
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Build and test status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'alexander-smolyakov',
+              repo: '${{ github.event.inputs.reportTo }}',
+              workflow_id: 'update_release_ticket.yml',
+              ref: 'main',
+              inputs: {
+                ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+                message: `✅ Build and test steps were passed successfully - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              }
+            });
+
+      # Steps to publish GitHub release
+
+      # Resolve release tag
+      - name: Determine tag
+        run: 'echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV'
+
+      # Step: Create GH release against tag
+      # Description: We send a request to GH API to create the release and save the link to it from the API request response
+      # GH API doc: https://docs.github.com/en/rest/releases/releases#create-a-release
+      - name: "Create GitHub release"
+        uses: "actions/github-script@v6"
+        id: release-link
+        with:
+          debug: true
+          result-encoding: string
+          script: |
+            try {
+              const release = await github.rest.repos.createRelease({
+                draft: true,
+                generate_release_notes: true,
+                name: process.env.RELEASE_TAG,
+                owner: context.repo.owner,
+                prerelease: true,
+                repo: context.repo.repo,
+                tag_name: process.env.RELEASE_TAG,
+              });
+              return release.data.html_url;
+            } catch (error) {
+              core.setFailed(error.message);
+            }
+
+      # Step: Send link for GH release to release ticket
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - Link to release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'alexander-smolyakov',
+              repo: '${{ github.event.inputs.reportTo }}',
+              workflow_id: 'update_release_ticket.yml',
+              ref: 'main',
+              inputs: {
+                ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+                message: `✅ Release published. Link to release: [link](${{ steps.release-link.outputs.result }})`
+              }
+            });
+
+      # Step: If pipeline failed we send notifiactin to release ticekt
+      # Description: We emit an event to update the release ticket, the workflow is stored in the release-process-demo repo.
+      # Link to related flow: https://github.com/alexander-smolyakov/release-process-demo/blob/main/.github/workflows/update_release_ticket.yml
+      # GH API doc: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+      - name: Update release ticket - pipeline failed
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          uses: actions/github-script@v6
+          github-token: ${{ secrets.GH_REPO_DEMO }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'alexander-smolyakov',
+              repo: '${{ github.event.inputs.reportTo }}',
+              workflow_id: 'update_release_ticket.yml',
+              ref: 'main',
+              inputs: {
+                ticketNumber: '${{ github.event.inputs.releaseTicketNumber }}',
+                message: `❌ Release pipeline failed, please investigated - [link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+              }
+            });
