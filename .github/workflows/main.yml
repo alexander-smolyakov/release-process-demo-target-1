@@ -91,7 +91,7 @@ jobs:
           script: |
             try {
               const release = await github.rest.repos.createRelease({
-                draft: true,
+                draft: false,
                 generate_release_notes: true,
                 name: process.env.RELEASE_TAG,
                 owner: context.repo.owner,
