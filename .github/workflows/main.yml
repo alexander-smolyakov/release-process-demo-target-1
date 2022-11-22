@@ -13,6 +13,11 @@ on:
         type: string
         required: false
         default: "-1"
+      draftRelease:
+        description: Create draft release
+        type: boolean
+        required: false
+        default: true
 
 jobs:
   release-proccess:
@@ -91,7 +96,7 @@ jobs:
           script: |
             try {
               const release = await github.rest.repos.createRelease({
-                draft: false,
+                draft: '${{ github.event.inputs.draftRelease }}',
                 generate_release_notes: true,
                 name: process.env.RELEASE_TAG,
                 owner: context.repo.owner,
